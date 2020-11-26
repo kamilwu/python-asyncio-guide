@@ -1,9 +1,11 @@
 import asyncio
 import sys
+from contextlib import suppress
 from typing import IO
 
 import aiofiles
 
+from chat.common import parse_args
 from chat.common import readlines
 from chat.common import write
 
@@ -22,7 +24,8 @@ async def handle_reads(reader: asyncio.StreamReader) -> None:
 
 
 async def connect(file: IO[str]) -> None:
-    reader, writer = await asyncio.open_connection(HOST, PORT)
+    args = parse_args()
+    reader, writer = await asyncio.open_connection(args.host, args.port)
     handler = asyncio.create_task(handle_reads(reader))
     loop = asyncio.get_event_loop()
 
@@ -30,7 +33,8 @@ async def connect(file: IO[str]) -> None:
         await write(writer, message.encode())
 
     handler.cancel()
-    await handler
+    with suppress(asyncio.CancelledError):
+        await handler
 
     writer.close()
     await writer.wait_closed()

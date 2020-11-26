@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import os
 from typing import AsyncIterator
@@ -25,3 +26,10 @@ async def read_until_eol(reader: asyncio.StreamReader) -> bytes:
 async def write(writer: asyncio.StreamWriter, data: bytes) -> None:
     writer.write(data)
     await writer.drain()
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host', default='127.0.0.1')
+    parser.add_argument('--port', default=8080)
+    return parser.parse_args()

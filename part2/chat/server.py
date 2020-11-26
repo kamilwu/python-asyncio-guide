@@ -2,12 +2,9 @@ import asyncio
 from typing import Dict
 from typing import Tuple
 
+from chat.common import parse_args
 from chat.common import readlines
 from chat.common import write
-
-
-HOST = '127.0.0.1'
-PORT = 8080
 
 
 users: Dict[Tuple[str, int], asyncio.StreamWriter] = {}
@@ -30,7 +27,9 @@ async def handle_connection(reader: asyncio.StreamReader,
 
 
 async def start_server() -> None:
-    server = await asyncio.start_server(handle_connection, HOST, PORT)
+    args = parse_args()
+    server = await asyncio.start_server(handle_connection, args.host,
+                                        args.port)
     addr = server.sockets[0].getsockname()
     print(f'Serving on {addr}')
 
