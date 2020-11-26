@@ -20,3 +20,8 @@ async def read_until_eol(reader: asyncio.StreamReader) -> bytes:
         if sep in data:
             message, _, data = data.partition(sep)
             return message + sep
+
+
+async def write(writer: asyncio.StreamWriter, data: bytes) -> None:
+    writer.write(data)
+    await writer.drain()

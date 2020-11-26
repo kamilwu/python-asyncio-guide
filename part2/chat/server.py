@@ -1,21 +1,31 @@
 import asyncio
+from typing import Dict
+from typing import Tuple
 
 from chat.common import readlines
+from chat.common import write
 
 
 HOST = '127.0.0.1'
 PORT = 8080
 
 
+users: Dict[Tuple[str, int], asyncio.StreamWriter] = {}
+
+
 async def handle_connection(reader: asyncio.StreamReader,
                             writer: asyncio.StreamWriter) -> None:
     addr = writer.get_extra_info('peername')
-    async for data in readlines(reader):
-        message = data.decode()
-        print(f'{addr}: {message!r}')
+    users[addr] = writer
+    print(f'{addr}: Connection established.')
 
-        writer.write(data)
-        await writer.drain()
+    async for data in readlines(reader):
+        print(f'{addr}: {data.decode()!r}')
+        writes = (write(writer, data) for user, writer in users.items()
+                  if user != addr)
+        await asyncio.gather(*writes)
+
+    del users[addr]
     print(f'{addr}: Connection closed by the remote peer.')
 
 
